@@ -12,14 +12,34 @@
   "commands": [
     {
       "name": "overseer",
-      "title": "overseer",
+      "title": "Overseer",
       "description": "",
-      "mode": "no-view"
+      "mode": "view"
+    }
+  ],
+  "preferences": [
+    {
+      "type": "textfield",
+      "name": "serverUrl",
+      "title": "Overseer URL",
+      "description": "URL for your Overseer instance",
+      "placeholder": "https://overseerr.dev",
+      "required": true
+    },
+    {
+      "type": "password",
+      "name": "token",
+      "title": "Token",
+      "description": "API token for your Overseer instance",
+      "required": true
     }
   ],
   "dependencies": {
     "@raycast/api": "^1.84.6",
-    "@raycast/utils": "^1.17.0"
+    "@raycast/utils": "^1.17.0",
+    "radash": "^12.1.0",
+    "ts-pattern": "^5.5.0",
+    "undici": "^6.20.1"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^1.0.11",
