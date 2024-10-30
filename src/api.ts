@@ -47,12 +47,14 @@ export const getRecentlyAdded = async () => {
 
   const contents = await parallel(5, media.results, async (el) => {
     if (el.mediaType === "tv") {
-      const med = await makeRequest<OverseerTV>(`tv/${el.id}`);
+      const med = await makeRequest<OverseerTV>(`tv/${el.tmdbId}`);
       return {
         id: med.id,
         type: "tv",
         title: med.name,
         posterPath: med.posterPath,
+        status: el.status,
+        mediaInfo: med.mediaInfo,
       } satisfies OverseerContent;
     }
     const med = await makeRequest<OverseerMovie>(`movie/${el.tmdbId}`);
@@ -61,6 +63,8 @@ export const getRecentlyAdded = async () => {
       type: "movie",
       title: med.title,
       posterPath: med.posterPath,
+      status: el.status,
+      mediaInfo: med.mediaInfo,
     } satisfies OverseerContent;
   });
 
@@ -74,14 +78,20 @@ export const search = async (query: string) => {
   return results.results;
 };
 
-export const createRequest = async (media: OverseerSearchContent) => {
+export const createRequest = async (id: number, mediaType: "movie" | "tv", seasons?: number[]) => {
   const response = await makeRequest(`request`, {
     method: "POST",
     body: JSON.stringify({
-      mediaType: media.mediaType,
-      mediaId: media.id,
+      mediaId: id,
+      mediaType: mediaType,
+      seasons,
     }),
   });
 
+  return response;
+};
+
+export const getMedia = async <T extends "tv" | "movie">(id: number, mediaType: T) => {
+  const response = await makeRequest<T extends "tv" ? OverseerTV : OverseerMovie>(`${mediaType}/${id}`);
   return response;
 };

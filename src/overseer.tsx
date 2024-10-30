@@ -1,84 +1,27 @@
-import {
-  Action,
-  ActionPanel,
-  Color,
-  Detail,
-  getPreferenceValues,
-  Grid,
-  Icon,
-  showToast,
-  Toast,
-  useNavigation,
-} from "@raycast/api";
+import { Grid, useNavigation } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
-import { createRequest, getRecentlyAdded, search } from "./api";
+import { getRecentlyAdded, search } from "./api";
 import { useEffect, useState } from "react";
-import { mediaStatus, MediaStatus, OverseerSearchContent } from "./types";
+import { OverseerSearchContent } from "./types";
 import { isEmpty } from "radash";
-import { match } from "ts-pattern";
-import path from "path";
+import { HomeView } from "./HomeView";
+import { getMediaStatusIcon, GridActions } from "./utils";
+import { MovieDetail } from "./MovieDetail";
+import { TVDetail } from "./TVDetail";
 
-type ItemAccessory = Grid.Item.Props["accessory"];
+const getTitle = (media: OverseerSearchContent) => {
+  if (media.mediaType === "movie") {
+    return media.title;
+  }
+  return media.name;
+};
 
-function MediaDetail({ media }: { media: OverseerSearchContent }) {
-  const preferences = getPreferenceValues<Preferences>();
-  const markdown = `
-![](https://images.tmdb.org/t/p/w300${media.posterPath})
-`;
-
-  const request = async () => {
-    const toast = await showToast({
-      style: Toast.Style.Animated,
-      title: "Requesting...",
-    });
-
-    try {
-      const res = await createRequest(media);
-      console.log(res);
-      toast.title = "Requested!";
-      toast.style = Toast.Style.Success;
-    } catch (err) {
-      console.error(err);
-      toast.title = "Error";
-      toast.style = Toast.Style.Failure;
-      if (err instanceof Error) {
-        toast.message = err.message;
-      }
-    }
-  };
-
-  return (
-    <Detail
-      markdown={markdown}
-      metadata={
-        <Detail.Metadata>
-          <Detail.Metadata.Label title="title" text={media.mediaType === "tv" ? media.name : media.title} />
-          {media.mediaInfo != null && media.mediaInfo.status !== MediaStatus.UNKNOWN && (
-            <Detail.Metadata.Label title="status" text={mediaStatus(media.mediaInfo?.status)} />
-          )}
-        </Detail.Metadata>
-      }
-      actions={
-        <ActionPanel>
-          {(media.mediaInfo == null || media.mediaInfo?.status === MediaStatus.UNKNOWN) && (
-            <Action title="Request" onAction={request} />
-          )}
-          <Action.OpenInBrowser
-            url={path.join(preferences.serverUrl, media.mediaType, String(media.id))}
-            title="Open in Overseer"
-          />
-        </ActionPanel>
-      }
-    />
-  );
-}
-
-function RecentlyAdded() {
+export default function Command() {
+  const { push } = useNavigation();
   const [query, setQuery] = useState("");
   const { data, isLoading } = usePromise(getRecentlyAdded);
   const [results, setResults] = useState<OverseerSearchContent[]>([]);
   const [loadingSearch, setLoadingSearch] = useState(false);
-  const { push } = useNavigation();
 
   useEffect(() => {
     (async () => {
@@ -92,13 +35,21 @@ function RecentlyAdded() {
     })();
   }, [query]);
 
+  const goToDetail = (content: OverseerSearchContent) => {
+    if (content.mediaType === "tv") {
+      push(<TVDetail id={content.id} />);
+    } else {
+      push(<MovieDetail id={content.id} />);
+    }
+  };
+
   return (
     <Grid
       isLoading={isLoading || loadingSearch}
       searchBarPlaceholder="Search Movies & TV"
       filtering={false}
       fit={Grid.Fit.Fill}
-      aspectRatio="9/16"
+      aspectRatio="2/3"
       onSearchTextChange={setQuery}
       throttle
     >
@@ -106,45 +57,19 @@ function RecentlyAdded() {
         results.map((media) => (
           <Grid.Item
             key={media.id}
-            title={media.mediaType === "tv" ? media.name : media.title}
+            title={getTitle(media)}
             subtitle={media.mediaType}
             content={{ source: "https://images.tmdb.org/t/p/w300" + media.posterPath }}
             actions={
-              <ActionPanel>
-                <Action title="Show Detail" onAction={() => push(<MediaDetail media={media} />)} />
-              </ActionPanel>
+              media.mediaType !== "person" ? (
+                <GridActions id={media.id} plexUrl={media.mediaInfo?.plexUrl} onDetail={() => goToDetail(media)} />
+              ) : undefined
             }
-            accessory={match(media.mediaInfo)
-              .returnType<ItemAccessory>()
-              .with({ status: MediaStatus.AVAILABLE }, () => ({
-                icon: { source: Icon.CheckCircle, tintColor: Color.Green },
-              }))
-              .with({ status: MediaStatus.PENDING }, () => ({
-                icon: { source: Icon.CircleProgress25, tintColor: Color.Purple },
-              }))
-              .with({ status: MediaStatus.PROCESSING }, () => ({
-                icon: { source: Icon.Stopwatch, tintColor: Color.Purple },
-              }))
-              .otherwise(() => undefined)}
+            accessory={{ icon: getMediaStatusIcon(media.mediaInfo) }}
           />
         ))}
 
-      {isEmpty(query) &&
-        data?.map((media) => (
-          <Grid.Item
-            key={media.id}
-            title={media.title}
-            content={{ source: "https://images.tmdb.org/t/p/w300/" + media.posterPath }}
-            actions={
-              <ActionPanel>
-                <Action title="Show Detail" onAction={() => {}} />
-              </ActionPanel>
-            }
-          />
-        ))}
+      {isEmpty(query) && <HomeView data={data} />}
     </Grid>
   );
-}
-export default function Command() {
-  return <RecentlyAdded />;
 }

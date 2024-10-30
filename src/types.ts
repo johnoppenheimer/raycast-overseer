@@ -6,7 +6,13 @@ export enum MediaStatus {
   AVAILABLE = 5,
 }
 
-export const mediaStatus = (status: MediaStatus): string => {
+export enum MediaType {
+  MOVIE = "movie",
+  TV = "tv",
+  PERSON = "person",
+}
+
+export const mediaStatus = (status?: MediaStatus): string => {
   switch (status) {
     case MediaStatus.PROCESSING:
       return "requested";
@@ -46,7 +52,7 @@ export type OverseerMedia = {
   mediaType: "tv" | "movie";
   tvdbId: number;
   tmdbId: number;
-  status: number;
+  status: MediaStatus;
 };
 
 export type OverseerContent = {
@@ -54,6 +60,23 @@ export type OverseerContent = {
   type: "tv" | "movie";
   title: string;
   posterPath: string;
+  status: MediaStatus;
+  mediaInfo?: MediaInfo;
+};
+
+export type Credits = {
+  crew: (People & { job: string; department: string })[];
+  cast: People[];
+};
+
+export type TVSeason = {
+  id: number;
+  episodeCount: number;
+  airDate: string;
+  overview: string;
+  posterPath: string;
+  name: string;
+  seasonNumber: number;
 };
 
 export type OverseerTV = {
@@ -61,7 +84,15 @@ export type OverseerTV = {
   name: string;
   originalName: string;
   posterPath: string;
-  mediaType: "tv";
+  status: string;
+  credits: Credits;
+  mediaInfo?: MediaInfo;
+  seasons: TVSeason[];
+};
+
+export type People = {
+  id: number;
+  name: string;
 };
 
 export type OverseerMovie = {
@@ -69,18 +100,26 @@ export type OverseerMovie = {
   title: string;
   originalTitle: string;
   posterPath: string;
-  mediaType: "movie";
+  status: string;
+  mediaInfo: MediaInfo;
+  credits: Credits;
+  overview: string;
+};
+
+type MediaInfo = {
+  id: number;
+  tvdbId: number;
+  tmdbId: number;
+  status: MediaStatus;
+  mediaType: "tv" | "movie";
+  plexUrl?: string;
+  iOSPlexUrl?: string;
 };
 
 export type OverseerSearchContent = {
   id: number;
   posterPath: string;
-  mediaInfo?: {
-    id: number;
-    tvdbId: number;
-    tmdbId: number;
-    status: MediaStatus;
-  };
+  mediaInfo?: MediaInfo;
 } & (
   | {
       mediaType: "tv";
@@ -89,5 +128,9 @@ export type OverseerSearchContent = {
   | {
       mediaType: "movie";
       title: string;
+    }
+  | {
+      mediaType: "person";
+      name: string;
     }
 );
