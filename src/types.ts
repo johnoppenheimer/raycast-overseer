@@ -85,9 +85,13 @@ export type OverseerTV = {
   originalName: string;
   posterPath: string;
   status: string;
+  createdBy?: (People & { credit_id: string })[];
   credits: Credits;
   mediaInfo?: MediaInfo;
   seasons: TVSeason[];
+  numberOfSeasons: number;
+  numberOfEpisodes: number;
+  overview: string;
 };
 
 export type People = {
