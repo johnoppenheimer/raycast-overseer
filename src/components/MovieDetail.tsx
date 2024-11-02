@@ -1,10 +1,10 @@
 import { Action, ActionPanel, Detail, Icon, showToast, Toast } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
-import { createRequest, getMedia } from "./api";
-import { mediaStatus, MediaStatus, OverseerMovie } from "./types";
+import { createRequest, getMedia } from "../api";
+import { mediaStatus, MediaStatus, OverseerMovie } from "../types";
 import path from "node:path";
-import { getMediaStatusIcon } from "./utils";
-import { getPreferences } from "./preferences";
+import { getMediaStatusIcon } from "../utils";
+import { getPreferences } from "../preferences";
 
 function Content({ media }: { media: OverseerMovie }) {
   const preferences = getPreferences();

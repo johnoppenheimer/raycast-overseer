@@ -4,10 +4,10 @@ import { getRecentlyAdded, search } from "./api";
 import { useEffect, useState } from "react";
 import { OverseerSearchContent } from "./types";
 import { isEmpty } from "radash";
-import { HomeView } from "./HomeView";
+import { HomeView } from "./components/HomeView";
 import { getMediaStatusIcon, GridActions } from "./utils";
-import { MovieDetail } from "./MovieDetail";
-import { TVDetail } from "./TVDetail";
+import { MovieDetail } from "./components/MovieDetail";
+import { TVDetail } from "./components/TVDetail";
 
 const getTitle = (media: OverseerSearchContent) => {
   if (media.mediaType === "movie") {

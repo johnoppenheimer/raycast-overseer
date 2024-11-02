@@ -1,6 +1,6 @@
 import { Grid, useNavigation } from "@raycast/api";
-import { OverseerContent } from "./types";
-import { getMediaStatusIcon, GridActions } from "./utils";
+import { OverseerContent } from "../types";
+import { getMediaStatusIcon, GridActions } from "../utils";
 import { MovieDetail } from "./MovieDetail";
 import { TVDetail } from "./TVDetail";
 
