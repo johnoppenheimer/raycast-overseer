@@ -13,7 +13,13 @@
     {
       "name": "overseer",
       "title": "Overseer",
-      "description": "",
+      "description": "Request movies and TV shows",
+      "mode": "view"
+    },
+    {
+      "name": "issues",
+      "title": "Issues",
+      "description": "Show movies and TV shows issues",
       "mode": "view"
     }
   ],

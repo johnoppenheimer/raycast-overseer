@@ -138,3 +138,54 @@ export type OverseerSearchContent = {
       name: string;
     }
 );
+
+export enum IssueType {
+  VIDEO = 1,
+  AUDIO = 2,
+  SUBTITLE = 3,
+  OTHER = 4,
+}
+
+export const issueType = (type: IssueType): string => {
+  switch (type) {
+    case IssueType.VIDEO:
+      return "video";
+    case IssueType.AUDIO:
+      return "audio";
+    case IssueType.SUBTITLE:
+      return "subtitle";
+    case IssueType.OTHER:
+      return "other";
+    default:
+      return "";
+  }
+};
+
+export type OverseerUser = {
+  id: number;
+  email: string;
+  plexUsername: string;
+  username: string;
+  displayName: string;
+  avatar: string;
+};
+
+export type OverseerIssue = {
+  id: number;
+  issueType: IssueType;
+  createdAt: string;
+  updatedAt: string;
+  problemSeason?: number;
+  problemEpisode?: number;
+  createdBy: OverseerUser;
+  media: MediaInfo;
+  comments?: IssueComment[];
+  posterPath?: string;
+  title?: string;
+};
+
+export type IssueComment = {
+  id: number;
+  user: OverseerUser;
+  message: string;
+};

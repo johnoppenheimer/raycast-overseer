@@ -5,7 +5,9 @@ import { environment } from "@raycast/api";
 import { parallel } from "radash";
 
 import {
+  IssueComment,
   OverseerContent,
+  OverseerIssue,
   OverseerListResponse,
   OverseerMedia,
   OverseerMovie,
@@ -93,5 +95,50 @@ export const createRequest = async (id: number, mediaType: "movie" | "tv", seaso
 
 export const getMedia = async <T extends "tv" | "movie">(id: number, mediaType: T) => {
   const response = await makeRequest<T extends "tv" ? OverseerTV : OverseerMovie>(`${mediaType}/${id}`);
+  return response;
+};
+
+export const getIssues = async () => {
+  const response = await makeRequest<OverseerListResponse<OverseerIssue>>("issue");
+
+  const results = await parallel(5, response.results, async (el) => {
+    const fullEl = await makeRequest<OverseerIssue>(`issue/${el.id}`);
+
+    if (el.media.mediaType === "tv") {
+      const med = await makeRequest<OverseerTV>(`tv/${el.media.tmdbId}`);
+      return {
+        ...fullEl,
+        posterPath: med.posterPath,
+        title: med.name,
+      } satisfies OverseerIssue;
+    }
+
+    const med = await makeRequest<OverseerMovie>(`movie/${el.media.tmdbId}`);
+    return {
+      ...fullEl,
+      posterPath: med.posterPath,
+      title: el.title,
+    } satisfies OverseerIssue;
+  });
+
+  return results;
+};
+
+export const addIssueComment = async (issueId: number, comment: string) => {
+  const response = await makeRequest<IssueComment>(`issue/${issueId}/comment`, {
+    method: "POST",
+    body: JSON.stringify({
+      message: comment,
+    }),
+  });
+
+  return response;
+};
+
+export const updateIssueStatus = async (issueId: number, status: "open" | "resolved") => {
+  const response = await makeRequest<OverseerIssue>(`issue/${issueId}/${status}`, {
+    method: "POST",
+  });
+
   return response;
 };
