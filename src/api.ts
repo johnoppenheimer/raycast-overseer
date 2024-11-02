@@ -23,7 +23,7 @@ const makeRequest = async <T extends object | object[]>(
 
   const { body, statusCode } = await request(p, {
     headers: {
-      "X-Api-Key": preferences.token,
+      Cookie: `connect.sid=${preferences.token}`,
       "User-Agent": `Overseer Raycast Extension, Raycast/${environment.raycastVersion} (${os.type()} ${os.version()})`,
       "Content-Type": "application/json",
     },

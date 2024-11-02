@@ -29,8 +29,8 @@
     {
       "type": "password",
       "name": "token",
-      "title": "Token",
-      "description": "API token for your Overseer instance",
+      "title": "Auth Cookie",
+      "description": "connect.sid cookie from Overseer",
       "required": true
     }
   ],
