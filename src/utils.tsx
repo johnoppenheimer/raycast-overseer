@@ -1,7 +1,8 @@
-import { Action, ActionPanel, Color, getPreferenceValues, Icon, Image } from "@raycast/api";
-import { MediaStatus } from "./types";
+import { Action, ActionPanel, Color, Icon, Image } from "@raycast/api";
 import { match } from "ts-pattern";
 import path from "node:path";
+import { MediaStatus } from "./types";
+import { getPreferences } from "./preferences";
 
 export const getMediaStatusIcon = (options?: { status: MediaStatus }) => {
   return match(options)
@@ -26,7 +27,7 @@ export const getMediaStatusIcon = (options?: { status: MediaStatus }) => {
 };
 
 export const GridActions = ({ id, plexUrl, onDetail }: { id: number; plexUrl?: string; onDetail: () => void }) => {
-  const preferences = getPreferenceValues<Preferences>();
+  const preferences = getPreferences();
   return (
     <ActionPanel>
       <Action title="Show Detail" onAction={onDetail} />

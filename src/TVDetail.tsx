@@ -1,15 +1,4 @@
-import {
-  Action,
-  ActionPanel,
-  Color,
-  Detail,
-  getPreferenceValues,
-  Icon,
-  List,
-  showToast,
-  Toast,
-  useNavigation,
-} from "@raycast/api";
+import { Action, ActionPanel, Color, Detail, Icon, List, showToast, Toast, useNavigation } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
 import { createRequest, getMedia } from "./api";
 import { MediaStatus, mediaStatus, OverseerTV } from "./types";
@@ -18,6 +7,7 @@ import { getMediaStatusIcon } from "./utils";
 import { useState } from "react";
 import { isEmpty } from "radash";
 import dayjs from "dayjs";
+import { getPreferences } from "./preferences";
 
 function SeasonSelector({ media }: { media: OverseerTV }) {
   const { pop } = useNavigation();
@@ -102,7 +92,7 @@ function SeasonSelector({ media }: { media: OverseerTV }) {
 
 function Content({ media }: { media: OverseerTV }) {
   const { push } = useNavigation();
-  const preferences = getPreferenceValues<Preferences>();
+  const preferences = getPreferences();
 
   const markdown = `
 # ${media.name}

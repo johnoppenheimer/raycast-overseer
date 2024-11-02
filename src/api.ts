@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 import { Dispatcher, request } from "undici";
-import { environment, getPreferenceValues } from "@raycast/api";
+import { environment } from "@raycast/api";
 import { parallel } from "radash";
 
 import {
@@ -12,13 +12,13 @@ import {
   OverseerSearchContent,
   OverseerTV,
 } from "./types";
-import { Preferences } from "./preferences";
+import { getPreferences } from "./preferences";
 
 const makeRequest = async <T extends object | object[]>(
   urlPath: string,
   options?: Omit<Dispatcher.RequestOptions, "path" | "headers">,
 ): Promise<T> => {
-  const preferences = getPreferenceValues<Preferences>();
+  const preferences = getPreferences();
   const p = path.join(preferences.serverUrl, "api/v1", urlPath);
 
   const { body, statusCode } = await request(p, {
