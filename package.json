@@ -19,7 +19,7 @@
     {
       "name": "issues",
       "title": "Issues",
-      "description": "Show movies and TV shows issues",
+      "description": "Show issues created by Overseer users",
       "mode": "view"
     }
   ],
