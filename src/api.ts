@@ -117,7 +117,7 @@ export const getIssues = async () => {
     return {
       ...fullEl,
       posterPath: med.posterPath,
-      title: el.title,
+      title: med.title,
     } satisfies OverseerIssue;
   });
 
