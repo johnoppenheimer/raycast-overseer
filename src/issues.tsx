@@ -7,7 +7,24 @@ import { match } from "ts-pattern";
 import path from "node:path";
 import { getPreferences } from "./preferences";
 import dayjs from "dayjs";
-import { isEmpty } from "radash";
+import { capitalize, isEmpty } from "radash";
+
+const getServiceName = (serviceUrl: string) => {
+  const regex = /(https:\/\/)(?<service>\w+)(\.036\.fr\/.+)/gm;
+
+  let m;
+
+  while ((m = regex.exec(serviceUrl)) !== null) {
+    // This is necessary to avoid infinite loops with zero-width matches
+    if (m.index === regex.lastIndex) {
+      regex.lastIndex++;
+    }
+
+    return m[2];
+  }
+
+  return "";
+};
 
 const formatComments = (issue: OverseerIssue): string => {
   if (issue.comments == null) return "";
@@ -168,6 +185,12 @@ export default function Command() {
                   url={path.join(preferences.serverUrl, issue.media.mediaType, String(issue.media.tmdbId))}
                   title="Open in Overseer"
                 />
+                {issue.media.serviceUrl != null && (
+                  <Action.OpenInBrowser
+                    url={issue.media.serviceUrl}
+                    title={"Open in " + capitalize(getServiceName(issue.media.serviceUrl))}
+                  />
+                )}
                 <Action title="Close Issue" onAction={() => closeIssue(issue)} icon={Icon.CheckCircle} />
                 <Action
                   title="Add Comment"

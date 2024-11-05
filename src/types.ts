@@ -118,6 +118,7 @@ type MediaInfo = {
   mediaType: "tv" | "movie";
   plexUrl?: string;
   iOSPlexUrl?: string;
+  serviceUrl?: string;
 };
 
 export type OverseerSearchContent = {
