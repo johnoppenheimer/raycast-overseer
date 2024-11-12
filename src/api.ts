@@ -1,8 +1,7 @@
 import os from "node:os";
-import path from "node:path";
-import { Dispatcher, request } from "undici";
 import { environment } from "@raycast/api";
 import { parallel } from "radash";
+import fetch from "isomorphic-fetch";
 
 import {
   IssueComment,
@@ -15,41 +14,33 @@ import {
   OverseerTV,
 } from "./types";
 import { getPreferences } from "./preferences";
+import ky from "ky";
 
-const makeRequest = async <T extends object | object[]>(
-  urlPath: string,
-  options?: Omit<Dispatcher.RequestOptions, "path" | "headers">,
-): Promise<T> => {
-  const preferences = getPreferences();
-  const p = path.join(preferences.serverUrl, "api/v1", urlPath);
-
-  const { body, statusCode } = await request(p, {
-    headers: {
-      Cookie: `connect.sid=${preferences.token}`,
-      "User-Agent": `Overseer Raycast Extension, Raycast/${environment.raycastVersion} (${os.type()} ${os.version()})`,
-      "Content-Type": "application/json",
-    },
-    ...options,
-  });
-
-  const data = await body.json();
-
-  if (statusCode >= 400) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    throw new Error((data as any).message);
-  }
-
-  return data as T;
-};
+const preferences = getPreferences();
+const client = ky.create({
+  prefixUrl: preferences.serverUrl + "/api/v1",
+  headers: {
+    Cookie: `connect.sid=${preferences.token}`,
+    "User-Agent": `Overseer Raycast Extension, Raycast/${environment.raycastVersion} (${os.type()} ${os.version()})`,
+    "Content-Type": "application/json",
+  },
+  fetch,
+});
 
 export const getRecentlyAdded = async () => {
-  const media = await makeRequest<OverseerListResponse<OverseerMedia>>(
-    "media?filter=allavailable&sort=mediaAdded&take=20",
-  );
+  const media = await client
+    .get<OverseerListResponse<OverseerMedia>>("media", {
+      searchParams: {
+        filter: "allavailable",
+        sort: "mediaAdded",
+        take: "20",
+      },
+    })
+    .json();
 
   const contents = await parallel(5, media.results, async (el) => {
     if (el.mediaType === "tv") {
-      const med = await makeRequest<OverseerTV>(`tv/${el.tmdbId}`);
+      const med = await client.get<OverseerTV>(`tv/${el.tmdbId}`).json();
       return {
         id: med.id,
         type: "tv",
@@ -59,7 +50,7 @@ export const getRecentlyAdded = async () => {
         mediaInfo: med.mediaInfo,
       } satisfies OverseerContent;
     }
-    const med = await makeRequest<OverseerMovie>(`movie/${el.tmdbId}`);
+    const med = await client.get<OverseerMovie>(`movie/${el.tmdbId}`).json();
     return {
       id: med.id,
       type: "movie",
@@ -74,38 +65,41 @@ export const getRecentlyAdded = async () => {
 };
 
 export const search = async (query: string) => {
-  const results = await makeRequest<OverseerListResponse<OverseerSearchContent>>(
-    `search?query=${encodeURIComponent(query)}`,
-  );
+  const results = await client
+    .get<OverseerListResponse<OverseerSearchContent>>("search", {
+      searchParams: {
+        query: encodeURIComponent(query),
+      },
+    })
+    .json();
   return results.results;
 };
 
 export const createRequest = async (id: number, mediaType: "movie" | "tv", seasons?: number[]) => {
-  const response = await makeRequest(`request`, {
-    method: "POST",
-    body: JSON.stringify({
+  const response = await client.post(`request`, {
+    json: {
       mediaId: id,
       mediaType: mediaType,
       seasons,
-    }),
+    },
   });
 
-  return response;
+  return response.json();
 };
 
 export const getMedia = async <T extends "tv" | "movie">(id: number, mediaType: T) => {
-  const response = await makeRequest<T extends "tv" ? OverseerTV : OverseerMovie>(`${mediaType}/${id}`);
-  return response;
+  const response = await client.get<T extends "tv" ? OverseerTV : OverseerMovie>(`${mediaType}/${id}`);
+  return response.json();
 };
 
 export const getIssues = async () => {
-  const response = await makeRequest<OverseerListResponse<OverseerIssue>>("issue");
+  const response = await client.get<OverseerListResponse<OverseerIssue>>("issue").json();
 
   const results = await parallel(5, response.results, async (el) => {
-    const fullEl = await makeRequest<OverseerIssue>(`issue/${el.id}`);
+    const fullEl = await client.get<OverseerIssue>(`issue/${el.id}`).json();
 
     if (el.media.mediaType === "tv") {
-      const med = await makeRequest<OverseerTV>(`tv/${el.media.tmdbId}`);
+      const med = await client.get<OverseerTV>(`tv/${el.media.tmdbId}`).json();
       return {
         ...fullEl,
         posterPath: med.posterPath,
@@ -113,7 +107,7 @@ export const getIssues = async () => {
       } satisfies OverseerIssue;
     }
 
-    const med = await makeRequest<OverseerMovie>(`movie/${el.media.tmdbId}`);
+    const med = await client.get<OverseerMovie>(`movie/${el.media.tmdbId}`).json();
     return {
       ...fullEl,
       posterPath: med.posterPath,
@@ -125,20 +119,19 @@ export const getIssues = async () => {
 };
 
 export const addIssueComment = async (issueId: number, comment: string) => {
-  const response = await makeRequest<IssueComment>(`issue/${issueId}/comment`, {
-    method: "POST",
-    body: JSON.stringify({
-      message: comment,
-    }),
-  });
+  const response = await client
+    .post<IssueComment>(`issue/${issueId}/comment`, {
+      json: {
+        message: comment,
+      },
+    })
+    .json();
 
   return response;
 };
 
 export const updateIssueStatus = async (issueId: number, status: "open" | "resolved") => {
-  const response = await makeRequest<OverseerIssue>(`issue/${issueId}/${status}`, {
-    method: "POST",
-  });
+  const response = await client.post<OverseerIssue>(`issue/${issueId}/${status}`).json();
 
   return response;
 };
