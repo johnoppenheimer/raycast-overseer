@@ -1,5 +1,5 @@
 import { Grid, useNavigation } from "@raycast/api";
-import { usePromise } from "@raycast/utils";
+import { useCachedPromise } from "@raycast/utils";
 import { getRecentlyAdded, search } from "./api";
 import { useEffect, useState } from "react";
 import { OverseerSearchContent } from "./types";
@@ -19,7 +19,7 @@ const getTitle = (media: OverseerSearchContent) => {
 export default function Command() {
   const { push } = useNavigation();
   const [query, setQuery] = useState("");
-  const { data, isLoading } = usePromise(getRecentlyAdded);
+  const { data, isLoading } = useCachedPromise(getRecentlyAdded);
   const [results, setResults] = useState<OverseerSearchContent[]>([]);
   const [loadingSearch, setLoadingSearch] = useState(false);
 
