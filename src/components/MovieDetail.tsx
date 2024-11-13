@@ -42,11 +42,13 @@ ${media.overview}
       markdown={markdown}
       metadata={
         <Detail.Metadata>
-          <Detail.Metadata.Label
-            title="status"
-            icon={getMediaStatusIcon(media.mediaInfo)}
-            text={mediaStatus(media.mediaInfo.status)}
-          />
+          {media.mediaInfo?.status != null && (
+            <Detail.Metadata.Label
+              title="status"
+              icon={getMediaStatusIcon(media.mediaInfo)}
+              text={mediaStatus(media.mediaInfo?.status)}
+            />
+          )}
           <Detail.Metadata.Label
             title="Director(s)"
             text={media.credits.crew
@@ -59,13 +61,15 @@ ${media.overview}
       }
       actions={
         <ActionPanel>
-          {media.mediaInfo.status === MediaStatus.UNKNOWN && <Action title="Request" onAction={request} />}
+          {(media.mediaInfo == null || media.mediaInfo?.status === MediaStatus.UNKNOWN) && (
+            <Action title="Request" onAction={request} />
+          )}
           <Action.OpenInBrowser
             icon={Icon.Info}
             url={path.join(preferences.serverUrl, "movie", String(media.id))}
             title="Open in Overseer"
           />
-          {media.mediaInfo.plexUrl != null && (
+          {media.mediaInfo?.plexUrl != null && (
             <Action.OpenInBrowser icon={Icon.Monitor} url={media.mediaInfo.plexUrl} title="Open in Plex Web" />
           )}
         </ActionPanel>

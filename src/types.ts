@@ -105,7 +105,7 @@ export type OverseerMovie = {
   originalTitle: string;
   posterPath: string;
   status: string;
-  mediaInfo: MediaInfo;
+  mediaInfo?: MediaInfo;
   credits: Credits;
   overview: string;
 };
