@@ -40,7 +40,8 @@ export const getRecentlyAdded = async () => {
 
   const contents = await parallel(5, media.results, async (el) => {
     if (el.mediaType === "tv") {
-      const med = await client.get<OverseerTV>(`tv/${el.tmdbId}`).json();
+      const resp = await client.get<OverseerTV>(`tv/${el.tmdbId}`);
+      const med = await resp.json();
       return {
         id: med.id,
         type: "tv",
@@ -50,7 +51,10 @@ export const getRecentlyAdded = async () => {
         mediaInfo: med.mediaInfo,
       } satisfies OverseerContent;
     }
-    const med = await client.get<OverseerMovie>(`movie/${el.tmdbId}`).json();
+
+    const resp = await client.get<OverseerMovie>(`movie/${el.tmdbId}`);
+    const med = await resp.json();
+
     return {
       id: med.id,
       type: "movie",
